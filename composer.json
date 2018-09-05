@@ -1,5 +1,5 @@
 {
-  "name": "chiron/twig-renderer",
+  "name": "chiron/blade-renderer",
   "type" : "library",
   "description": "Blade Render for Chiron Framework.",
   "keywords": ["chiron","framework","view","template","blade","illuminate","phtml", "renderer"],
