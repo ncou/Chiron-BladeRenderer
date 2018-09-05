@@ -4,17 +4,28 @@ use Chiron\Views\BladeRenderer;
 use Chiron\Views\TemplatePath;
 use PHPUnit\Framework\TestCase;
 use Illuminate\View\Factory;
+use Illuminate\View\Compilers\BladeCompiler;
+use Illuminate\View\Engines\CompilerEngine;
+use Illuminate\View\Engines\EngineResolver;
+use Illuminate\Filesystem\Filesystem;
+use Illuminate\Events\Dispatcher;
+use Illuminate\View\FileViewFinder;
 
 class BladeRendererTest extends TestCase
 {
-        /**
+    /**
      * @var Factory
      */
     private $bladeEngine;
 
     protected function setUp()
     {
-        //$this->bladeEngine = new Factory();
+        // initialise engine even if it's not really used for the tests, because we don't render using the engine, we always render with the default engine initialised inside the BladeRenderer constructor.
+        $this->bladeEngine = new Factory(
+            new EngineResolver,
+            new FileViewFinder(new Filesystem, []),
+            new Dispatcher
+        );
     }
 
     public function assertTemplatePath($path, TemplatePath $templatePath, $message = null)

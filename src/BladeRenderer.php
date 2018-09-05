@@ -29,28 +29,33 @@ class BladeRenderer implements TemplateRendererInterface
      *
      * @param   Factory  $renderer  Rendering engine
      *
-     * @since   __DEPLOY_VERSION__
      */
+    // TODO : passer dans le constructeur le path du cache, c'est un paramétre obligatoire pour Blade
     public function __construct(Factory $engine = null)
     {
-        if (!$engine)
-        {
-            $filesystem = new Filesystem;
-            $resolver = new EngineResolver;
-            $resolver->register(
-                'blade',
-                function () use ($filesystem)
-                {
-                    return new CompilerEngine(new BladeCompiler($filesystem, getcwd() . '/cache'));
-                }
-            );
-            $engine = new Factory(
-                $resolver,
-                new FileViewFinder($filesystem, []),
-                new Dispatcher
-            );
-        }
-        $this->engine = $engine;
+        $this->engine = $engine ?: $this->createBladeEngine();
+    }
+
+    /**
+     * Create a default Blade engine.
+     */
+    private function createBladeEngine(): Factory
+    {
+        $filesystem = new Filesystem;
+        $resolver = new EngineResolver;
+        $resolver->register(
+            'blade',
+            function () use ($filesystem)
+            {
+                return new CompilerEngine(new BladeCompiler($filesystem, getcwd() . '/cache'));
+            }
+        );
+
+        return new Factory(
+            $resolver,
+            new FileViewFinder($filesystem, []),
+            new Dispatcher
+        );
     }
 
     /**
@@ -86,7 +91,7 @@ class BladeRenderer implements TemplateRendererInterface
     /**
      * Get the template directories
      *
-     * @return ViewPath[]
+     * @return TemplatePath[]
      */
     public function getPaths() : array
     {
@@ -111,7 +116,7 @@ class BladeRenderer implements TemplateRendererInterface
     /**
      * Checks if the view exists
      *
-     * @param   string  $path  Full path or part of a path
+     * @param   string  $name  Full template path or part of a template path
      *
      * @return  boolean  True if the path exists
      */
