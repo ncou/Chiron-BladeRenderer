@@ -4,10 +4,6 @@ declare(strict_types=1);
 
 namespace Chiron\Views;
 
-use Chiron\Views\AttributesTrait;
-use Chiron\Views\TemplateRendererInterface;
-use Chiron\Views\TemplatePath;
-
 use Illuminate\Events\Dispatcher;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\View\Compilers\BladeCompiler;
@@ -27,8 +23,7 @@ class BladeRenderer implements TemplateRendererInterface
     /**
      * Constructor.
      *
-     * @param   Factory  $renderer  Rendering engine
-     *
+     * @param Factory $renderer Rendering engine
      */
     // TODO : passer dans le constructeur le path du cache, c'est un paramétre obligatoire pour Blade
     public function __construct(Factory $engine = null)
@@ -41,12 +36,11 @@ class BladeRenderer implements TemplateRendererInterface
      */
     private function createBladeEngine(): Factory
     {
-        $filesystem = new Filesystem;
-        $resolver = new EngineResolver;
+        $filesystem = new Filesystem();
+        $resolver = new EngineResolver();
         $resolver->register(
             'blade',
-            function () use ($filesystem)
-            {
+            function () use ($filesystem) {
                 return new CompilerEngine(new BladeCompiler($filesystem, getcwd() . '/cache'));
             }
         );
@@ -54,7 +48,7 @@ class BladeRenderer implements TemplateRendererInterface
         return new Factory(
             $resolver,
             new FileViewFinder($filesystem, []),
-            new Dispatcher
+            new Dispatcher()
         );
     }
 
@@ -65,35 +59,37 @@ class BladeRenderer implements TemplateRendererInterface
      * and allow omitting the filename extension.
      *
      * @param string $name
-     * @param array $params
+     * @param array  $params
      */
-    public function render(string $name, array $params = []) : string
+    public function render(string $name, array $params = []): string
     {
         $params = array_merge($this->attributes, $params);
 
         return $this->engine->make($name, $params)->render();
     }
+
     /**
      * Add a template path to the engine.
      *
      * Adds a template path, with optional namespace the templates in that path
      * provide.
      */
-    public function addPath(string $path, string $namespace = null) : void
+    public function addPath(string $path, string $namespace = null): void
     {
         if (! $namespace) {
             $this->engine->getFinder()->addLocation($path);
+
             return;
         }
         $this->engine->getFinder()->addNamespace($namespace, $path);
     }
 
     /**
-     * Get the template directories
+     * Get the template directories.
      *
      * @return TemplatePath[]
      */
-    public function getPaths() : array
+    public function getPaths(): array
     {
         $templatePaths = [];
 
@@ -112,13 +108,12 @@ class BladeRenderer implements TemplateRendererInterface
         return $templatePaths;
     }
 
-
     /**
-     * Checks if the view exists
+     * Checks if the view exists.
      *
-     * @param   string  $name  Full template path or part of a template path
+     * @param string $name Full template path or part of a template path
      *
-     * @return  boolean  True if the path exists
+     * @return bool True if the path exists
      */
     public function exists(string $name): bool
     {
@@ -126,15 +121,17 @@ class BladeRenderer implements TemplateRendererInterface
     }
 
     /**
-     * Sets file extension for template loader
+     * Sets file extension for template loader.
      *
-     * @param   string  $extension  Template files extension
-     * @return  $this
+     * @param string $extension Template files extension
+     *
+     * @return $this
      */
-// TODO : méthode à virer ???? et donc forcer dans le constructeur d'avoir un objet Factory déjà initialisé avec les bonnes extensions ????
+    // TODO : méthode à virer ???? et donc forcer dans le constructeur d'avoir un objet Factory déjà initialisé avec les bonnes extensions ????
     public function addFileExtension(string $extension): self
     {
         $this->engine->addExtension($extension, 'blade');
+
         return $this;
     }
 }
