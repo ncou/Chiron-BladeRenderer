@@ -16,15 +16,6 @@ class BladeRendererTest extends TestCase
      */
     private $bladeEngine;
 
-    protected function setUp()
-    {
-        // initialise engine even if it's not really used for the tests, because we don't render using the engine, we always render with the default engine initialised inside the BladeRenderer constructor.
-        $this->bladeEngine = new Factory(
-            new EngineResolver(),
-            new FileViewFinder(new Filesystem(), []),
-            new Dispatcher()
-        );
-    }
 
     public function assertTemplatePath($path, TemplatePath $templatePath, $message = null)
     {
@@ -63,7 +54,13 @@ class BladeRendererTest extends TestCase
 
     public function testCanProvideEngineAtInstantiation()
     {
-        $renderer = new BladeRenderer($this->bladeEngine);
+        $bladeEngine = new Factory(
+            new EngineResolver(),
+            new FileViewFinder(new Filesystem(), []),
+            new Dispatcher()
+        );
+
+        $renderer = new BladeRenderer($bladeEngine);
         $this->assertInstanceOf(BladeRenderer::class, $renderer);
         $this->assertEmpty($renderer->getPaths());
     }

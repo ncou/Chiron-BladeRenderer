@@ -18,6 +18,9 @@ class BladeRenderer implements TemplateRendererInterface
 {
     use AttributesTrait;
 
+    /**
+     * @var Factory
+     */
     private $engine;
 
     /**
@@ -38,10 +41,12 @@ class BladeRenderer implements TemplateRendererInterface
     {
         $filesystem = new Filesystem();
         $resolver = new EngineResolver();
+
+        $cachePath = sys_get_temp_dir();
         $resolver->register(
             'blade',
-            function () use ($filesystem) {
-                return new CompilerEngine(new BladeCompiler($filesystem, getcwd() . '/cache'));
+            function () use ($filesystem, $cachePath) {
+                return new CompilerEngine(new BladeCompiler($filesystem, $cachePath));
             }
         );
 
