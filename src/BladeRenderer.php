@@ -127,7 +127,6 @@ class BladeRenderer implements TemplateRendererInterface
      *
      * @return $this
      */
-    // TODO : méthode à virer ???? et donc forcer dans le constructeur d'avoir un objet Factory déjà initialisé avec les bonnes extensions ????
     public function addFileExtension(string $extension): self
     {
         $this->engine->addExtension($extension, 'blade');
