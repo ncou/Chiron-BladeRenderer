@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Chiron\Views;
 
-use Psr\Container\ContainerInterface;
 use Illuminate\Events\Dispatcher;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\View\Compilers\BladeCompiler;
@@ -12,6 +11,7 @@ use Illuminate\View\Engines\CompilerEngine;
 use Illuminate\View\Engines\EngineResolver;
 use Illuminate\View\Factory;
 use Illuminate\View\FileViewFinder;
+use Psr\Container\ContainerInterface;
 
 class BladeEngineFactory
 {
