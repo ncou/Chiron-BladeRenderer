@@ -17,44 +17,22 @@ use Illuminate\View\FileViewFinder;
 class BladeRenderer implements TemplateRendererInterface
 {
     use AttributesTrait;
+    use ExtensionTrait;
 
     /**
      * @var Factory
      */
-    private $engine;
+    private $blade;
 
     /**
      * Constructor.
      *
-     * @param Factory $renderer Rendering engine
+     * @param Factory $blade Rendering engine
      */
     // TODO : passer dans le constructeur le path du cache, c'est un paramétre obligatoire pour Blade
-    public function __construct(Factory $engine = null)
+    public function __construct(Factory $blade)
     {
-        $this->engine = $engine ?: $this->createBladeEngine();
-    }
-
-    /**
-     * Create a default Blade engine.
-     */
-    private function createBladeEngine(): Factory
-    {
-        $filesystem = new Filesystem();
-        $resolver = new EngineResolver();
-
-        $cachePath = sys_get_temp_dir();
-        $resolver->register(
-            'blade',
-            function () use ($filesystem, $cachePath) {
-                return new CompilerEngine(new BladeCompiler($filesystem, $cachePath));
-            }
-        );
-
-        return new Factory(
-            $resolver,
-            new FileViewFinder($filesystem, []),
-            new Dispatcher()
-        );
+        $this->blade = $blade;
     }
 
     /**
@@ -70,7 +48,7 @@ class BladeRenderer implements TemplateRendererInterface
     {
         $params = array_merge($this->attributes, $params);
 
-        return $this->engine->make($name, $params)->render();
+        return $this->blade->make($name, $params)->render();
     }
 
     /**
@@ -82,11 +60,11 @@ class BladeRenderer implements TemplateRendererInterface
     public function addPath(string $path, string $namespace = null): void
     {
         if (! $namespace) {
-            $this->engine->getFinder()->addLocation($path);
+            $this->blade->getFinder()->addLocation($path);
 
             return;
         }
-        $this->engine->getFinder()->addNamespace($namespace, $path);
+        $this->blade->getFinder()->addNamespace($namespace, $path);
     }
 
     /**
@@ -98,8 +76,8 @@ class BladeRenderer implements TemplateRendererInterface
     {
         $templatePaths = [];
 
-        $paths = $this->engine->getFinder()->getPaths();
-        $hints = $this->engine->getFinder()->getHints();
+        $paths = $this->blade->getFinder()->getPaths();
+        $hints = $this->blade->getFinder()->getHints();
 
         foreach ($paths as $path) {
             $templatePaths[] = new TemplatePath($path);
@@ -110,7 +88,7 @@ class BladeRenderer implements TemplateRendererInterface
             }
         }
 
-        return $templatePaths;
+        return array_reverse($templatePaths);
     }
 
     /**
@@ -122,7 +100,7 @@ class BladeRenderer implements TemplateRendererInterface
      */
     public function exists(string $name): bool
     {
-        return $this->engine->exists($name);
+        return $this->blade->exists($name);
     }
 
     /**
@@ -132,10 +110,20 @@ class BladeRenderer implements TemplateRendererInterface
      *
      * @return $this
      */
-    public function addFileExtension(string $extension): self
+    public function setFileExtension(string $extension): self
     {
-        $this->engine->addExtension($extension, 'blade');
+        $this->extension = $extension;
+        // TODO : attention cette méthode va ajouter plusieurs extension dans un tableau, dans notre cas on veux une seule extension, voir comment vider ce tableau d'extensions avant d'ajouter la string $extension.
+        $this->blade->addExtension($extension, 'blade');
 
         return $this;
+    }
+
+    /**
+     * Return the Blade Engine.
+     */
+    public function blade(): Factory
+    {
+        return $this->blade;
     }
 }

@@ -8,6 +8,8 @@ use Illuminate\View\Engines\EngineResolver;
 use Illuminate\View\Factory;
 use Illuminate\View\FileViewFinder;
 use PHPUnit\Framework\TestCase;
+use Illuminate\View\Compilers\BladeCompiler;
+use Illuminate\View\Engines\CompilerEngine;
 
 class BladeRendererTest extends TestCase
 {
@@ -15,6 +17,27 @@ class BladeRendererTest extends TestCase
      * @var Factory
      */
     private $bladeEngine;
+
+    protected function setUp()
+    {
+        // create the Blade Engine
+        $filesystem = new Filesystem();
+        $resolver = new EngineResolver();
+
+        $cachePath = sys_get_temp_dir();
+        $resolver->register(
+            'blade',
+            function () use ($filesystem, $cachePath) {
+                return new CompilerEngine(new BladeCompiler($filesystem, $cachePath));
+            }
+        );
+
+        $this->bladeEngine = new Factory(
+            $resolver,
+            new FileViewFinder($filesystem, []),
+            new Dispatcher()
+        );
+    }
 
 
     public function assertTemplatePath($path, TemplatePath $templatePath, $message = null)
@@ -52,35 +75,25 @@ class BladeRendererTest extends TestCase
         }
     }
 
-    public function testCanProvideEngineAtInstantiation()
+    public function testConstructor()
     {
-        $bladeEngine = new Factory(
-            new EngineResolver(),
-            new FileViewFinder(new Filesystem(), []),
-            new Dispatcher()
-        );
-
-        $renderer = new BladeRenderer($bladeEngine);
+        $renderer = new BladeRenderer($this->bladeEngine);
         $this->assertInstanceOf(BladeRenderer::class, $renderer);
         $this->assertEmpty($renderer->getPaths());
-    }
 
-    public function testLazyLoadsEngineAtInstantiationIfNoneProvided()
-    {
-        $renderer = new BladeRenderer();
-        $this->assertInstanceOf(BladeRenderer::class, $renderer);
-        $this->assertEmpty($renderer->getPaths());
+        $blade = $renderer->blade();
+        $this->assertInstanceOf(Factory::class, $blade);
     }
 
     public function testCanAddPath()
     {
-        $renderer = new BladeRenderer();
-        $renderer->addPath(__DIR__ . '/TestAsset');
+        $renderer = new BladeRenderer($this->bladeEngine);
+        $renderer->addPath(__DIR__ . '/Fixtures');
         $paths = $renderer->getPaths();
         $this->assertInternalType('array', $paths);
         $this->assertCount(1, $paths);
-        $this->assertTemplatePath(__DIR__ . '/TestAsset', $paths[0]);
-        $this->assertTemplatePathString(__DIR__ . '/TestAsset', $paths[0]);
+        $this->assertTemplatePath(__DIR__ . '/Fixtures', $paths[0]);
+        $this->assertTemplatePathString(__DIR__ . '/Fixtures', $paths[0]);
         $this->assertEmptyTemplatePathNamespace($paths[0]);
 
         return $renderer;
@@ -88,21 +101,39 @@ class BladeRendererTest extends TestCase
 
     public function testCanAddPathWithNamespace()
     {
-        $renderer = new BladeRenderer();
-        $renderer->addPath(__DIR__ . '/TestAsset', 'test');
+        $renderer = new BladeRenderer($this->bladeEngine);
+        $renderer->addPath(__DIR__ . '/Fixtures', 'test');
         $paths = $renderer->getPaths();
         $this->assertInternalType('array', $paths);
         $this->assertCount(1, $paths);
-        $this->assertTemplatePath(__DIR__ . '/TestAsset', $paths[0]);
-        $this->assertTemplatePathString(__DIR__ . '/TestAsset', $paths[0]);
+        $this->assertTemplatePath(__DIR__ . '/Fixtures', $paths[0]);
+        $this->assertTemplatePathString(__DIR__ . '/Fixtures', $paths[0]);
         $this->assertTemplatePathNamespace('test', $paths[0]);
     }
 
     public function testDelegatesRenderingToUnderlyingImplementation()
     {
-        $renderer = new BladeRenderer();
-        $renderer->addPath(__DIR__ . '/TestAsset');
+        $renderer = new BladeRenderer($this->bladeEngine);
+        $renderer->addPath(__DIR__ . '/Fixtures');
         $result = $renderer->render('testTemplate', ['hello' => 'Hi']);
         $this->assertEquals('Hi', $result);
+    }
+
+/*
+    public function testTemplateExistsWithExtensionInFileName()
+    {
+        $renderer = new BladeRenderer($this->bladeEngine);
+        $renderer->addPath(__DIR__ . '/Fixtures');
+        $result = $renderer->exists('testTemplate.blade.php');
+        $this->assertTrue($result);
+    }
+*/
+
+    public function testTemplateExistsWithoutExtensionInFileName()
+    {
+        $renderer = new BladeRenderer($this->bladeEngine);
+        $renderer->addPath(__DIR__ . '/Fixtures');
+        $result = $renderer->exists('testTemplate');
+        $this->assertTrue($result);
     }
 }

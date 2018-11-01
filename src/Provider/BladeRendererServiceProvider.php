@@ -4,6 +4,7 @@ namespace Chiron\Views\Provider;
 
 use Chiron\Views\TemplateRendererInterface;
 use Chiron\Views\BladeRenderer;
+use Chiron\Views\BladeEngineFactory;
 use Psr\Container\ContainerInterface;
 
 class BladeRendererServiceProvider
@@ -23,21 +24,28 @@ class BladeRendererServiceProvider
      */
     public function register(ContainerInterface $container)
     {
-        // config
+        // add default config settings if not already presents in the container.
         if (! $container->has('templates')) {
             $container['templates'] = [
                 'extension' => 'html',
                 'paths'     => [],
             ];
         }
-        // factory
+
+        // *** Factories ***
+        $container[BladeEngineFactory::class] = function ($c) {
+            return call_user_func(new BladeEngineFactory(), $c);
+        };
+
         $container[BladeRenderer::class] = function ($c) {
+            // init the blade engine and instanciate the renderer using this engine.
+            $blade = $c->get(BladeEngineFactory::class);
+            $renderer = new BladeRenderer($blade);
+            // grab the config settings in the container.
             $config = $c->get('templates');
-
-            $renderer = new BladeRenderer();
-            $renderer->addFileExtension($config['extension']);
-
-            // Add template paths
+            // Add template file extension.
+            $renderer->setExtension($config['extension']);
+            // Add template paths.
             $allPaths = isset($config['paths']) && is_array($config['paths']) ? $config['paths'] : [];
             foreach ($allPaths as $namespace => $paths) {
                 $namespace = is_numeric($namespace) ? null : $namespace;
@@ -48,7 +56,8 @@ class BladeRendererServiceProvider
 
             return $renderer;
         };
-        // alias
+
+        // *** Alias ***
         $container[TemplateRendererInterface::class] = function ($c) {
             return $c->get(BladeRenderer::class);
         };
