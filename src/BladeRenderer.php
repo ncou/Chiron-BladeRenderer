@@ -110,7 +110,7 @@ class BladeRenderer implements TemplateRendererInterface
      *
      * @return $this
      */
-    public function setFileExtension(string $extension): self
+    public function setExtension(string $extension): TemplateRendererInterface
     {
         $this->extension = $extension;
         // TODO : attention cette méthode va ajouter plusieurs extension dans un tableau, dans notre cas on veux une seule extension, voir comment vider ce tableau d'extensions avant d'ajouter la string $extension.
