@@ -4,13 +4,7 @@ declare(strict_types=1);
 
 namespace Chiron\Views;
 
-use Illuminate\Events\Dispatcher;
-use Illuminate\Filesystem\Filesystem;
-use Illuminate\View\Compilers\BladeCompiler;
-use Illuminate\View\Engines\CompilerEngine;
-use Illuminate\View\Engines\EngineResolver;
 use Illuminate\View\Factory;
-use Illuminate\View\FileViewFinder;
 
 // TODO : regarder ici pour créer le répertoire du cache si il n'existe pas : https://github.com/arrilot/bitrix-blade/blob/master/src/BladeProvider.php#L165
 

@@ -2,9 +2,9 @@
 
 namespace Chiron\Views\Provider;
 
-use Chiron\Views\TemplateRendererInterface;
-use Chiron\Views\BladeRenderer;
 use Chiron\Views\BladeEngineFactory;
+use Chiron\Views\BladeRenderer;
+use Chiron\Views\TemplateRendererInterface;
 use Psr\Container\ContainerInterface;
 
 class BladeRendererServiceProvider

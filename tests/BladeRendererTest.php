@@ -4,12 +4,12 @@ use Chiron\Views\BladeRenderer;
 use Chiron\Views\TemplatePath;
 use Illuminate\Events\Dispatcher;
 use Illuminate\Filesystem\Filesystem;
+use Illuminate\View\Compilers\BladeCompiler;
+use Illuminate\View\Engines\CompilerEngine;
 use Illuminate\View\Engines\EngineResolver;
 use Illuminate\View\Factory;
 use Illuminate\View\FileViewFinder;
 use PHPUnit\Framework\TestCase;
-use Illuminate\View\Compilers\BladeCompiler;
-use Illuminate\View\Engines\CompilerEngine;
 
 class BladeRendererTest extends TestCase
 {
@@ -38,7 +38,6 @@ class BladeRendererTest extends TestCase
             new Dispatcher()
         );
     }
-
 
     public function assertTemplatePath($path, TemplatePath $templatePath, $message = null)
     {
@@ -119,15 +118,15 @@ class BladeRendererTest extends TestCase
         $this->assertEquals('Hi', $result);
     }
 
-/*
-    public function testTemplateExistsWithExtensionInFileName()
-    {
-        $renderer = new BladeRenderer($this->bladeEngine);
-        $renderer->addPath(__DIR__ . '/Fixtures');
-        $result = $renderer->exists('testTemplate.blade.php');
-        $this->assertTrue($result);
-    }
-*/
+    /*
+        public function testTemplateExistsWithExtensionInFileName()
+        {
+            $renderer = new BladeRenderer($this->bladeEngine);
+            $renderer->addPath(__DIR__ . '/Fixtures');
+            $result = $renderer->exists('testTemplate.blade.php');
+            $this->assertTrue($result);
+        }
+    */
 
     public function testTemplateExistsWithoutExtensionInFileName()
     {
